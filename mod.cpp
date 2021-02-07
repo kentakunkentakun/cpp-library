@@ -1,3 +1,4 @@
+
 // a^n mod を計算する
 
 long long modpow(long long a, long long n, long long mod) {
@@ -32,7 +33,7 @@ long long modinv(long long a, long long m) {
 ////////////////////////////////////////
 //二項係数 nCr
 const int MAX = 700000;
-
+const int MOD = 1000000007;
 long long fac[MAX], finv[MAX], inv[MAX];
 
 // テーブルを作る前処理
@@ -53,5 +54,4 @@ long long COM(int n, int k){
     if (n < 0 || k < 0) return 0;
     return fac[n] * (finv[k] * finv[n - k] % MOD) % MOD;
 }
-loug long 
 //////////////////////////////////////
