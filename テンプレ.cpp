@@ -45,8 +45,8 @@ template<class T> inline bool chmin(T& a, T b) {
 ll dx[4]={0,1,0,-1};
 ll dy[4]={1,0,-1,0};
 int main(){
-　cin.tie(0);
-　ios::sync_with_studio(false);
+  cin.tie(0);
+  ios::sync_with_studio(false);
 }
 next_permutation(v.begin(), v.end())
 

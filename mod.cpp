@@ -33,7 +33,6 @@ long long modinv(long long a, long long m) {
 ////////////////////////////////////////
 //二項係数 nCr
 const int MAX = 700000;
-const int MOD = 1000000007;
 long long fac[MAX], finv[MAX], inv[MAX];
 
 // テーブルを作る前処理
