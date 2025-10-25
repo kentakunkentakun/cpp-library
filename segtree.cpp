@@ -1,38 +1,3 @@
-struct segtree
-{
-    int n;
-    vector<int> d;
-    segtree(int mx)
-    {
-        n = 1;
-        while (n < mx)
-            n <<= 1;
-        d = vector<int>(n << 1);
-    }
-    int getmax(int a, int b, int i = 1, int l = 0, int r = -1)
-    {
-        if (r == -1)
-            r = n;
-        if (a <= l && r <= b)
-            return d[i];
-        int res = 0;
-        int c = (l + r) >> 1;
-        if (a < c)
-            res = max(res, getmax(a, b, i << 1, l, c));
-        if (c < b)
-            res = max(res, getmax(a, b, i << 1 | 1, c, r));
-        return res;
-    }
-    void add(int i, int x)
-    {
-        i += n;
-        while (i)
-        {
-            d[i] = max(d[i], x);
-            i >>= 1;
-        }
-    }
-};
 
 //////////////////////////////////////////////
 
@@ -66,7 +31,7 @@ struct SegmentTree
         dat.resize(n << 1, e);
     }
     void build(int n_, const vector<T> &v)
-    { 
+    {
         for (int i = 0; i < n_; ++i)
             dat[n + i] = v[i];
         build();
