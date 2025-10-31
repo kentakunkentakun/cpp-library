@@ -1,125 +1,120 @@
-///// 最小素因数（SPF）テーブル & 高速素因数分解 /////
+#include <iostream>
+#include <vector>
+#define ll long long
+using namespace std;
 
-// ビルド後：min_factor[x] = x の最小素因数（x>=2）/ is_prime[x] は素数判定O(1)
-vector<ll> primes;
-vector<ll> is_prime;
-vector<ll> min_factor;
-
-// N までの SPF を構築（O(N log log N)）
-void build_min_factor(ll N)
+// エラトステネスの篩
+struct Eratosthenes
 {
-  is_prime.assign(N + 1, true);
-  min_factor.assign(N + 1, 0);
-  if (N >= 0)
-    is_prime[0] = false;
-  if (N >= 1)
-    is_prime[1] = false;
-if (N >= 1)
-    min_factor[1] = 1;
+  // テーブル
+  vector<bool> isprime;
 
-  for (ll i = 2; i <= N; ++i)
+  // 整数 i を割り切る最小の素数
+  vector<ll> minfactor;
+
+  // メビウス関数値
+  vector<int> mobius;
+
+  // コンストラクタで篩を回す
+  Eratosthenes(ll N) : isprime(N + 1, true),
+                       minfactor(N + 1, -1),
+                       mobius(N + 1, 1)
   {
-    if (is_prime[i])
+    // 1 は予めふるい落としておく
+    isprime[1] = false;
+    minfactor[1] = 1;
+
+    // 篩
+    for (ll p = 2; p <= N; ++p)
     {
-      min_factor[i] = i; // 素数の最小素因数は自分
-      primes.push_back(i);
-      // i*i から刻む（オーバーフロー対策で 1LL）
-      for (ll j = 1LL * i * i; j <= N; j += i)
+      // すでに合成数であるものはスキップする
+      if (!isprime[p])
+        continue;
+
+      // p についての情報更新
+      minfactor[p] = p;
+      mobius[p] = -1;
+
+      // p 以外の p の倍数から素数ラベルを剥奪
+      for (ll q = p * 2; q <= N; q += p)
       {
-        is_prime[(ll)j] = false;
-        if (min_factor[(ll)j] == 0)
-          min_factor[(ll)j] = i;
+        // q は合成数なのでふるい落とす
+        isprime[q] = false;
+
+        // q は p で割り切れる旨を更新
+        if (minfactor[q] == -1)
+          minfactor[q] = p;
+        if ((q / p) % p == 0)
+          mobius[q] = 0;
+        else
+          mobius[q] = -mobius[q];
       }
     }
   }
-}
 
-// SPF を使った素因数分解： O(log n)
-// out[p] に指数が加算される（既存 map にも追記できる）
-void prime_factor_spf(ll x, map<ll, ll> &out)
-{
-  while (x > 1)
+  // 高速素因数分解
+  // pair (素因子, 指数) の vector を返す
+  vector<pair<ll, ll>> factorize(ll n)
   {
-    ll p = min_factor[(ll)x];
-    if (p == 0)
-  { // x がテーブル上限を超える/未構築などの保険
-      // フォールバック（素朴）：必要なら削除可
-      for (ll d = 2; d * d <= x; ++d)
+    vector<pair<ll, ll>> res;
+    while (n > 1)
+    {
+      ll p = minfactor[n];
+      ll exp = 0;
+
+      // n で割り切れる限り割る
+      while (minfactor[n] == p)
       {
-        while (x % d == 0)
+        n /= p;
+        ++exp;
+      }
+      res.emplace_back(p, exp);
+    }
+    return res;
+  }
+
+  // 高速約数列挙
+  vector<ll> divisors(ll n)
+  {
+    vector<ll> res({1});
+
+    // n を素因数分解 (メンバ関数使用)
+    auto pf = factorize(n);
+
+    // 約数列挙
+    for (auto p : pf)
+    {
+      ll s = (ll)res.size();
+      for (ll i = 0; i < s; ++i)
+      {
+        ll v = 1;
+        for (ll j = 0; j < p.second; ++j)
         {
-          out[d]++;
-          x /= d;
+          v *= p.first;
+          res.push_back(res[i] * v);
         }
       }
-      if (x > 1)
-        out[x]++;
-      return;
     }
-    ll cnt = 0;
-    while (x % p == 0)
-    {
-      x /= p;
-      cnt++;
-    }
-    out[p] += cnt;
+    return res;
   }
-}
+};
 
-// ベクタで返す版（{素因数, 指数} の昇順）
-vector<pair<ll, ll>> prime_factor_spf_vec(ll x)
+int main()
 {
-  vector<pair<ll, ll>> ret;
-  while (x > 1)
-  {
-    ll p = min_factor[(ll)x];
-    if (p == 0)
-    {
-      for (ll d = 2; d * d <= x; ++d)
-      {
-        if (x % d == 0)
-        {
-          ll c = 0;
-          while (x % d == 0)
-          {
-            x /= d;
-            c++;
-          }
-          ret.push_back({d, c});
-        }
-      }
-      if (x > 1)
-        ret.push_back({x, 1});
-      break;
-    }
-    ll c = 0;
-    while (x % p == 0)
-    {
-      x /= p;
-      c++;
-    }
-    ret.push_back({p, c});
-  }
-  sort(ret.begin(), ret.end());
-  return ret;
-}
+  // エラトステネスの篩
+  Eratosthenes er(50);
 
-// 参考：SPFを使った約数列挙（素因数分解→全展開）
-vector<ll> divisors_from_spf(ll x)
-{
-  auto pf = prime_factor_spf_vec(x);
-  vector<ll> ds = {1};
-  for (auto [p, e] : pf)
+  // 結果表示
+  for (ll n = 2; n <= 50; ++n)
   {
-    size_t m = ds.size();
-    ll cur = 1;
-    for (ll k = 1; k <= e; ++k)
+    auto pf = er.factorize(n);
+    cout << n << ": ";
+    for (ll i = 0; i < pf.size(); ++i)
     {
-      cur *= p;
-      for (size_t i = 0; i < m; ++i)
-        ds.push_back(ds[i] * cur);
+      if (i > 0)
+        cout << " * ";
+      cout << pf[i].first << "^" << pf[i].second;
     }
+    cout << endl;
   }
-  sort(ds.begin(), ds.end());
-  return ds;
 }
