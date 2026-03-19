@@ -1,5 +1,5 @@
 // エラトステネスの篩
-
+vll arr(n);
 void Eratosthenes()
 {
 	for (ll i = 2; i < n; i++)
@@ -25,6 +25,32 @@ void Eratosthenes()
 		}
 	}
 }
+
+// 線形篩
+vll arr(n + 1);
+void Eratosthenes()
+{
+	vll prime_list(0);
+	rep(i, n + 1)
+	{
+		arr[i] = 1;
+	}
+	for (int i = 2; i <= n; i++)
+	{
+		if (arr[i])
+		{
+			arr[i] = i;
+			prime_list.pb(i);
+		}
+		for (auto p : prime_list)
+		{
+			if (p * i > n || p > arr[i])
+				break;
+			arr[p * i] = p;
+		}
+	}
+}
+
 //////素数判定
 bool is_prime(ll x)
 {

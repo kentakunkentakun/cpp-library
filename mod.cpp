@@ -42,7 +42,7 @@ long long modinv(long long a, long long m)
 }
 ////////////////////////////////////////
 // 二項係数 nCr
-const int MAX = 700000;
+const int MAX = 2000000;
 long long fac[MAX], finv[MAX], inv[MAX];
 
 // テーブルを作る前処理

@@ -15,6 +15,7 @@ mat mul(mat &A, mat &B)
       }
     }
   }
+  return c;
 }
 
 // A^nの計算
