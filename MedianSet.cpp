@@ -66,4 +66,17 @@ struct MedianSet
   {
     return (int)L.size() + (int)R.size();
   }
+  long double median()
+  {
+    assert(size() > 0);
+
+    if (size() % 2 == 1)
+    {
+      return median_lower();
+    }
+    else
+    {
+      return ((long double)median_lower() + (long double)median_upper()) / 2.0;
+    }
+  }
 };
