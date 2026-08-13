@@ -31,4 +31,11 @@ struct WeightedUnionFind
     diff[b] = w;
     return true;
   }
+
+  ll diff(int a, int b)
+  {
+    if (root(a) != root(b))
+      return -1;
+    return diff[b] - diff[a];
+  }
 };

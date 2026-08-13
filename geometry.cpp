@@ -40,16 +40,26 @@ struct V
   long double cross(const V &v) const { return x * v.y - v.x * y; }
   long double norm2() const { return x * x + y * y; }
   long double norm() const { return sqrt(norm2()); }
-  V normalize() const { return *this / norm(); }
+  V normalize() const
+  {
+    long double n = norm();
+    assert(n > eps);
+    return *this / n;
+  }
   V rotate90() const { return V(y, -x); }
   int ort() const
-  { // orthant
+  {
     if (abs(x) < eps && abs(y) < eps)
       return 0;
+
     if (y > 0)
-      return x > 0 ? 1 : 2;
-    else
-      return x > 0 ? 4 : 3;
+      return x >= 0 ? 1 : 2;
+
+    if (y < 0)
+      return x <= 0 ? 3 : 4;
+
+    // y == 0
+    return x > 0 ? 1 : 3;
   }
   bool operator<(const V &v) const
   {
@@ -76,11 +86,14 @@ struct Line
   V dir() const { return t - s; }
   V normalize() const { return dir().normalize(); }
   long double norm() const { return dir().norm(); }
-  /* +1: s-t,s-p : ccw
-   * -1: s-t,s-p : cw
-   * +2: t-s-p
-   * -2: s-t-p
-   *  0: s-p-t */
+  /*
+   * 点の位置関係を判定
+   * +1: s-t,s-p : ccw  s → t の左側
+   * -1: s-t,s-p : cw   s → t の右側
+   * +2: t-s-p          同一直線上で s より後ろ
+   * -2: s-t-p          同一直線上で t より先
+   *  0: s-p-t          線分 s-t 上
+   * */
   int ccw(const V &p) const
   {
     if (dir().cross(p - s) > eps)
@@ -93,6 +106,7 @@ struct Line
       return -2;
     return 0;
   }
+  // 線分同士の交差・接触判定
   bool touch(const Line &l) const
   {
     int a = ccw(l.s) * ccw(l.t), b = l.ccw(s) * l.ccw(t);
@@ -112,3 +126,28 @@ struct Line
     return abs((s - p).cross(t - p)) / (t - s).norm();
   }
 };
+
+// 交点座標を返す
+optional<V> intersectionPoint(const Line &a, const Line &b)
+{
+  V ad = a.dir();
+  V bd = b.dir();
+
+  long double denominator = ad.cross(bd);
+
+  // 平行または同一直線
+  if (abs(denominator) < eps)
+    return nullopt;
+
+  V d = b.s - a.s;
+
+  long double p = d.cross(bd) / denominator;
+  long double q = d.cross(ad) / denominator;
+
+  // 交点が線分の範囲外
+  if (p < -eps || p > 1 + eps ||
+      q < -eps || q > 1 + eps)
+    return nullopt;
+
+  return a.s + ad * p;
+}

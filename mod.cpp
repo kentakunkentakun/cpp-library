@@ -41,7 +41,6 @@ long long modinv(long long a, long long m)
     return u;
 }
 ////////////////////////////////////////
-// 二項係数 nCr
 const int MAX = 2000000;
 long long fac[MAX], finv[MAX], inv[MAX];
 
@@ -59,7 +58,7 @@ void COMinit()
     }
 }
 
-// 二項係数計算
+// 二項係数 nCk
 long long COM(int n, int k)
 {
     if (n < k)
@@ -67,5 +66,15 @@ long long COM(int n, int k)
     if (n < 0 || k < 0)
         return 0;
     return fac[n] * (finv[k] * finv[n - k] % MOD) % MOD;
+}
+
+// 順列 nPk
+long long PERM(int n, int k)
+{
+    if (n < k)
+        return 0;
+    if (n < 0 || k < 0)
+        return 0;
+    return fac[n] * finv[n - k] % MOD;
 }
 //////////////////////////////////////
